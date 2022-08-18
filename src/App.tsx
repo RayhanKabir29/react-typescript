@@ -1,24 +1,59 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useReducer, useRef,useCallback } from 'react';
+
 import './App.css';
 
+interface Todo{
+  id: number;
+  text: string;
+}
+type ActionType = {type:'ADD'; text: string} | {type:'REMOVE'; id: number}
+
 function App() {
+  const reducer = (state:Todo[], action:ActionType) =>{
+    switch(action.type){
+      case 'ADD':
+        return [
+          ...state,
+          {
+            id: state.length,
+            text: action.text,
+          },
+        ];
+        case 'REMOVE':
+          return state.filter(({id})=> id !== action.id);
+    }
+
+  }
+
+  const [todos, dispatch] = useReducer(reducer, []);
+
+  const onAddTodo = useCallback( ()=>{
+    if(newToDoRef.current){
+      dispatch({
+        type: 'ADD',
+        text: newToDoRef.current.value,
+      })
+      newToDoRef.current.value = "";
+    }
+  }, [])
+
+  
+
+   const newToDoRef = useRef<HTMLInputElement>(null);
+   
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {/* <Lists/> */}
+      <input type="text"  ref={newToDoRef}/>
+      <button onClick={onAddTodo}>ADD</button>
+      {
+        todos.map((todo)=>(
+          <div key={todo.id}>
+            {todo.text}
+            <button onClick ={() => dispatch({type:"REMOVE", id:todo.id})}>Remove</button>
+          </div>
+        ))
+      }
     </div>
   );
 }
